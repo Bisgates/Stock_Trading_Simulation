@@ -30,7 +30,7 @@ class CandlestickChart:
         mpf.plot(data_to_display, type='candle', style=self.style, axtitle="Original Data", axisoff=True, ax=splt[0])
 
         # Plot new data
-        mpf.plot(data_to_display, type='candle', style=self.style, columns=['New_Open', 'New_High', 'New_Low', 'New_Close', 'Volume'], axtitle="New Data", axisoff=True, ax=splt[1])
+        mpf.plot(data_to_display, type='candle', style=self.style, columns=['New_Open', 'New_High', 'New_Low', 'New_Close', 'Volume'], axtitle="Modified Data", axisoff=True, ax=splt[1])
 
         # Display price information on the top-left corner
         prices = data_to_display.iloc[-1]
