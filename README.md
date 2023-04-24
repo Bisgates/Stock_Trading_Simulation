@@ -1,4 +1,4 @@
-# Stock Trading Visualization and Simulation
+# Short-term trading strategy validation simulator
 This project is a stock trading visualization and simulation tool that allows users to interact with historical stock data, visualize it using candlestick charts, and simulate buy/sell operations based on the displayed data.
 
 ### Features
