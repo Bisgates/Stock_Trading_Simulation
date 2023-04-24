@@ -29,7 +29,7 @@ To set up the project, follow these steps:
 ### Usage
 Run the main script:
 
-`python trade_simulation.py`
+`python trade_simulation.py --file_path stock_data/apple.csv`
 
 This will launch the visualization window with the candlestick charts. You can navigate through the data and perform buy/sell operations using the following keyboard inputs:
 

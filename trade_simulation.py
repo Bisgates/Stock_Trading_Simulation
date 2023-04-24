@@ -1,3 +1,4 @@
+import argparse
 import mplfinance as mpf
 import matplotlib.pyplot as plt
 from src.prepare_data import PrepareData
@@ -74,6 +75,14 @@ class CandlestickChart:
         self.fig.canvas.mpl_connect('key_press_event', key_event)
         plt.show()
 
-file_path = 'stock_data/apple.csv'
-candlestick_chart = CandlestickChart(file_path, present_lenth=30)
-candlestick_chart.display()
+
+def main(file_path=None, present_lenth=30):
+    candlestick_chart = CandlestickChart(file_path, present_lenth)
+    candlestick_chart.display()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Stock Trading Visualization and Simulation")
+    parser.add_argument('--file_path', type=str, default='stock_data/apple.csv', help='Path to the CSV file containing stock data')
+    args = parser.parse_args()
+
+    main(args.file_path)
