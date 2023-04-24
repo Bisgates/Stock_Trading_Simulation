@@ -7,7 +7,10 @@ Display original and derived data side by side
 Simulate stock trading with buy and sell operations
 Record trading transactions to a CSV file for further analysis
 
+- screen shot
 ![](resources/screen_shot_1.png)
+- example output
+![](resources/screen_shot_2.png)
 
 ### Components
 The project consists of the following main components:
