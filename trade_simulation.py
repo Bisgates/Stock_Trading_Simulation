@@ -51,12 +51,10 @@ class CandlestickChart:
             if not self.trade_manager.hold_stock:
                 close_price = self.data.loc[self.current_date, 'Close']
                 self.trade_manager.buy_stock(self.current_date, close_price)
-                print(f"Bought stock on {self.current_date} at {close_price:.2f}")
         elif event.key == 'c':
             if self.trade_manager.hold_stock:
                 close_price = self.data.loc[self.current_date, 'Close']
                 self.trade_manager.sell_stock(self.current_date, close_price)
-                print(f"Sold stock on {self.current_date} at {close_price:.2f}")
         elif event.key == 'q':
             self.trade_manager.store_transactions()
             plt.close()
