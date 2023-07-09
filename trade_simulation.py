@@ -6,16 +6,18 @@ from src.trader import TradeManager
 
 
 class CandlestickChart:
-    def __init__(self, file_path, present_lenth=15):
+    def __init__(self, file_path, present_lenth=90):
         self.data = PrepareData(file_path).data
+        print(self.data.head(3))
         self.start_date = self.data.index[0]
         self.style = self.create_mpf_style()
         self.present_lenth = present_lenth
         self.trade_manager = TradeManager()
 
     def create_mpf_style(self):
-        mc = mpf.make_marketcolors(up='g', down='r', wick={'up': 'g', 'down': 'r'})
-        return mpf.make_mpf_style(marketcolors=mc)
+        # mc = mpf.make_marketcolors(up='g', down='r', wick={'up': 'g', 'down': 'r'})
+        # return mpf.make_mpf_style(marketcolors=mc)
+        return 'yahoo'
 
     def update_chart(self):
         end_date_index = self.data.index.get_loc(self.start_date) + self.present_lenth
@@ -27,10 +29,15 @@ class CandlestickChart:
         splt = self.fig.subplots(nrows=2, ncols=1, sharex=True)
 
         # Plot original data
-        mpf.plot(data_to_display, type='candle', style=self.style, axtitle="Original Data", axisoff=True, ax=splt[0])
+        mpf.plot(data_to_display, type='candle', style=self.style, axtitle="Original Data", axisoff=True, ax=splt[0], mav=(10, 30))
+        # mpf.plot(daily,type='candle',mav=(3,6,9))
 
         # Plot new data
         mpf.plot(data_to_display, type='candle', style=self.style, columns=['New_Open', 'New_High', 'New_Low', 'New_Close', 'Volume'], axtitle="Modified Data", axisoff=True, ax=splt[1])
+
+        # Plot volume
+        # volume_plot = mpf.make_addplot(data_to_display['Volume'], panel=1, color='b', secondary_y=False)
+        # mpf.plot(data_to_display, type='candle', style=self.style, addplot=volume_plot)
 
         # Display price information on the top-left corner
         prices = data_to_display.iloc[-1]
@@ -38,6 +45,7 @@ class CandlestickChart:
         splt[0].text(0, 1.05, price_info, transform=splt[0].transAxes, fontsize=10, backgroundcolor='white')
 
         plt.draw()
+
 
     def on_key(self, event):
         if event.key == 'l':
@@ -74,7 +82,7 @@ class CandlestickChart:
         plt.show()
 
 
-def main(file_path=None, present_lenth=30):
+def main(file_path=None, present_lenth=90):
     candlestick_chart = CandlestickChart(file_path, present_lenth)
     candlestick_chart.display()
 
