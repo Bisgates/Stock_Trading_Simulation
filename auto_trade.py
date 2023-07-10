@@ -7,19 +7,16 @@ class AutoTrade:
     def __init__(self, stocks_data):
         self.stocks_data = stocks_data
         self.trade_manager = TradeManager()
-        self.hold_stock = None
 
     def execute(self):
         for date in sorted(set(date for data in self.stocks_data.values() for date in data.index)):
-            if not self.hold_stock:
+            if not self.trade_manager.hold_stock:
                 for stock_name, data in self.stocks_data.items():
                     if date in data.index and data.loc[date, '10MA'] > data.loc[date, '30MA']:
                         self.trade_manager.buy_stock(date, data.loc[date, 'Close'], stock_name)
-                        self.hold_stock = stock_name
                         break
-            elif self.hold_stock is not None and date in self.stocks_data[self.hold_stock].index and self.stocks_data[self.hold_stock].loc[date, '10MA'] < self.stocks_data[self.hold_stock].loc[date, '30MA']:
-                self.trade_manager.sell_stock(date, self.stocks_data[self.hold_stock].loc[date, 'Close'], self.hold_stock)
-                self.hold_stock = None
+            elif self.trade_manager.hold_stock is not None and date in self.stocks_data[self.trade_manager.hold_stock].index and self.stocks_data[self.trade_manager.hold_stock].loc[date, '10MA'] < self.stocks_data[self.trade_manager.hold_stock].loc[date, '30MA']:
+                self.trade_manager.sell_stock(date, self.stocks_data[self.trade_manager.hold_stock].loc[date, 'Close'], self.trade_manager.hold_stock)
 
         self.trade_manager.store_transactions()
         self.trade_manager.display_transactions()

@@ -9,25 +9,25 @@ from datetime import datetime
 class TradeManager:
     def __init__(self):
         self.transactions = defaultdict(list)
-        self.hold_stock = False
+        self.hold_stock = None
         self.buy_date = None
 
     def buy_stock(self, current_date, close_price, stock_name):
-        self.hold_stock = True
+        self.hold_stock = stock_name
         buy_date = current_date.strftime('%Y-%m-%d')
-        self.buy_date = datetime.strptime(buy_date, '%Y-%m-%d')  # assuming the date is in 'YYYY-MM-DD' format
-        self.transactions['buy'].append((buy_date, close_price, stock_name))
-        print(f"Bought {stock_name} on {buy_date} at {close_price:.2f}")
+        self.buy_date = datetime.strptime(buy_date, '%Y-%m-%d') 
+        self.transactions['buy'].append((buy_date, close_price, self.hold_stock))
+        print(f"Bought {self.hold_stock} on {buy_date} at {close_price:.2f}")
 
     def sell_stock(self, current_date, close_price, stock_name):
         sell_date = current_date.strftime('%Y-%m-%d')
-        self.sell_date = datetime.strptime(sell_date, '%Y-%m-%d')  # assuming the date is in 'YYYY-MM-DD' format
+        self.sell_date = datetime.strptime(sell_date, '%Y-%m-%d') 
         hold_duration = (self.sell_date - self.buy_date).days
         buy_price = self.transactions['buy'][-1][1]
         return_rate = self.calculate_return_rate(buy_price, close_price)
         self.transactions['sell'].append((sell_date, close_price, return_rate, hold_duration))
-        print(f"Sold {stock_name} on {sell_date} at {close_price:.2f}, Return Rate: {return_rate:.2%}, Hold Duration: {hold_duration} days\n")
-        self.hold_stock = False
+        print(f"Sold {self.hold_stock} on {sell_date} at {close_price:.2f}, Return Rate: {return_rate:.2%}, Hold Duration: {hold_duration} days\n")
+        self.hold_stock = None
 
     def calculate_return_rate(self, buy_price, sell_price, with_fee=0.003):
         return_rate = (sell_price - buy_price) / buy_price
@@ -98,5 +98,8 @@ class TradeManager:
 
         console.print(table)
 
+
+        conclude_table = Table(show_header=True, header_style="bold magenta")
         last_row_note = transactions_df.iloc[-1]['Notes']
-        console.print(last_row_note)
+        conclude_table.add_row(last_row_note)
+        console.print(conclude_table)
