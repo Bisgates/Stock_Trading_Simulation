@@ -4,9 +4,9 @@ from src.prepare_data import PrepareData
 from src.trader import TradeManager
 
 class AutoTrade:
-    def __init__(self, stocks_data):
+    def __init__(self, stocks_data, log_path='logs/'):
         self.stocks_data = stocks_data
-        self.trade_manager = TradeManager()
+        self.trade_manager = TradeManager(init_value=1.0, log_path=log_path)
 
     def execute(self):
         for date in sorted(set(date for data in self.stocks_data.values() for date in data.index)):

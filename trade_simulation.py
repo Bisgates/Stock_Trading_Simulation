@@ -6,14 +6,13 @@ from src.trader import TradeManager
 
 
 class CandlestickChart:
-    def __init__(self, file_path, present_lenth=90):
+    def __init__(self, file_path, present_lenth=90, log_path='logs/'):
         self.data = PrepareData(file_path).data
-        print(self.data.head(3))
         self.stock_name = file_path.split('/')[-1].split('.')[0]
         self.start_date = self.data.index[0]
         self.style = self.create_mpf_style()
         self.present_lenth = present_lenth
-        self.trade_manager = TradeManager()
+        self.trade_manager = TradeManager(init_value=1.0, log_path=log_path)
 
     def create_mpf_style(self):
         # mc = mpf.make_marketcolors(up='g', down='r', wick={'up': 'g', 'down': 'r'})

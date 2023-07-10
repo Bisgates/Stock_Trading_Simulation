@@ -3,14 +3,19 @@ import pandas as pd
 from collections import defaultdict
 from rich.console import Console
 from rich.table import Table
+import json
 
 from datetime import datetime
 
 class TradeManager:
-    def __init__(self):
+    def __init__(self, init_value=1.0, trader_id=0, log_path=''):
         self.transactions = defaultdict(list)
         self.hold_stock = None
         self.buy_date = None
+        self.trader_id = trader_id
+        self.log_path = log_path
+        self.init_value = init_value
+        self.current_value = init_value
 
     def buy_stock(self, current_date, close_price, stock_name):
         self.hold_stock = stock_name
@@ -26,6 +31,7 @@ class TradeManager:
         buy_price = self.transactions['buy'][-1][1]
         return_rate = self.calculate_return_rate(buy_price, close_price)
         self.transactions['sell'].append((sell_date, close_price, return_rate, hold_duration))
+        self.current_value *= (1 + return_rate)
         print(f"Sold {self.hold_stock} on {sell_date} at {close_price:.2f}, Return Rate: {return_rate:.2%}, Hold Duration: {hold_duration} days\n")
         self.hold_stock = None
 
@@ -36,12 +42,11 @@ class TradeManager:
         return return_rate
     
     def store_transactions(self):
-        with open('transactions.csv', 'w', newline='') as csvfile:
+        with open(self.log_path + 'transactions.csv', 'w', newline='') as csvfile:
             fieldnames = ['Stock Name', 'Buy Date', 'Sell Date', 'Buy Price', 'Sell Price', 'Return Rate', 'Hold Duration', 'Notes']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
 
-            total_return = 1
             for buy, sell in zip(self.transactions['buy'], self.transactions['sell']):
                 writer.writerow({'Stock Name': buy[2],
                                  'Buy Date': buy[0], 
@@ -50,21 +55,20 @@ class TradeManager:
                                  'Sell Price': f"{sell[1]:.2f}", 
                                  'Return Rate': f"{sell[2]:.2%}", 
                                  'Hold Duration': sell[3]})
-                total_return *= (1 + sell[2])  # sell tuple: (date, price, return_rate, hold_duration)
-            total_return -= 1
-            
-            first_buy_price = self.transactions['buy'][0][1]
-            last_sell_price = self.transactions['sell'][-1][1]
-            buy_hold_return_rate = self.calculate_return_rate(first_buy_price, last_sell_price)
 
-            writer.writerow({'Notes': f"Total Return: {total_return:.2%}, Buy and Hold Return Rate: {buy_hold_return_rate:.2%}"})
+        trade_infos = {}
+        total_return = self.current_value / self.init_value - 1
+        trade_infos['total_return'] = total_return
+        trade_infos['buy_hold_return_rate'] = self.calculate_return_rate(self.transactions['buy'][0][1], self.transactions['sell'][-1][1])
+
+        json.dump(trade_infos, open(self.log_path + 'trade_infos.json', 'w'))
     
     def display_transactions(self):
-        transactions_df = pd.read_csv('transactions.csv')
+        transactions_df = pd.read_csv(self.log_path + 'transactions.csv')
+        trade_infos = json.load(open(self.log_path + 'trade_infos.json', 'r'))
 
-        without_last_row_df = transactions_df.iloc[:-1]
         selected_columns = ['Stock Name', 'Buy Date', 'Sell Date', 'Buy Price', 'Sell Price', 'Return Rate', 'Hold Duration']
-        without_last_row_df = without_last_row_df[selected_columns]
+        transactions_df = transactions_df[selected_columns]
 
         console = Console()
         table = Table(show_header=True, header_style="bold magenta")
@@ -76,7 +80,7 @@ class TradeManager:
         table.add_column("Return Rate", justify="right")
         table.add_column("Hold Duration", justify="right")
 
-        for _, row in without_last_row_df.iterrows():
+        for _, row in transactions_df.iterrows():
             return_rate = float(row['Return Rate'].strip('%')) / 100
             if return_rate > 0:
                 color = "green"
@@ -95,11 +99,14 @@ class TradeManager:
                 f"[{style}]{row['Return Rate']}[/]", 
                 str(int(row['Hold Duration']))
             )
-
         console.print(table)
-
-
+        
+        # trade infos
         conclude_table = Table(show_header=True, header_style="bold magenta")
-        last_row_note = transactions_df.iloc[-1]['Notes']
-        conclude_table.add_row(last_row_note)
+        conclude_table.add_column(f'{self.trader_id}_th Trader', justify="right")
+        conclude_table.add_column("Value", justify="right")
+        conclude_table.add_row('Total Return', "{:.2f}%".format(trade_infos['total_return']*100))
+        conclude_table.add_row('Buy & Hold Return', "{:.2f}%".format(trade_infos['buy_hold_return_rate']*100))
+        conclude_table.add_row('Init Value', "{:.2f}".format(self.init_value))
+        conclude_table.add_row('Current Value', "{:.2f}".format(self.current_value))
         console.print(conclude_table)
