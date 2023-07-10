@@ -9,6 +9,7 @@ class CandlestickChart:
     def __init__(self, file_path, present_lenth=90):
         self.data = PrepareData(file_path).data
         print(self.data.head(3))
+        self.stock_name = file_path.split('/')[-1].split('.')[0]
         self.start_date = self.data.index[0]
         self.style = self.create_mpf_style()
         self.present_lenth = present_lenth
@@ -57,13 +58,14 @@ class CandlestickChart:
         elif event.key == 'b':
             if not self.trade_manager.hold_stock:
                 close_price = self.data.loc[self.current_date, 'Close']
-                self.trade_manager.buy_stock(self.current_date, close_price)
+                self.trade_manager.buy_stock(self.current_date, close_price, self.stock_name)
         elif event.key == 'c':
             if self.trade_manager.hold_stock:
                 close_price = self.data.loc[self.current_date, 'Close']
-                self.trade_manager.sell_stock(self.current_date, close_price)
+                self.trade_manager.sell_stock(self.current_date, close_price, self.stock_name)
         elif event.key == 'q':
             self.trade_manager.store_transactions()
+            self.trade_manager.display_transactions()
             plt.close()
 
         self.update_chart()
