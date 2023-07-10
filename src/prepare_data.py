@@ -40,6 +40,7 @@ class PrepareData:
         # Add '10MA' and '30MA' columns
         data['10MA'] = data['Close'].rolling(window=10).mean()
         data['30MA'] = data['Close'].rolling(window=30).mean()
+        data['60MA'] = data['Close'].rolling(window=60).mean()
         
         # Initialize new columns
         data['New_Open'] = data['Open']

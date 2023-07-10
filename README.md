@@ -30,7 +30,14 @@ To set up the project, follow these steps:
 3. Place the downloaded CSV file in an appropriate directory and update the file_path variable in the main script to point to the file.
 
 ### Usage
-Run the main script:
+
+#### Auto trade:
+
+`python auto_trade.py --file_path stock_data/apple.csv`
+
+- implement your strategy in `auto_trade.py` (the default one is **MA 10/30**)
+
+#### Visualizer Simulation:
 
 `python trade_simulation.py --file_path stock_data/apple.csv`
 
@@ -40,7 +47,7 @@ This will launch the visualization window with the candlestick charts. You can n
 - `j`: Move backward in time
 - `b`: Buy stock
 - `c`: Sell stock
-- `q`: Quit and save transactions to a CSV file
+- `q`: Quit and save transactions to a CSV file, and will also display in terminal simultaneously
 
 ### License
 This project is licensed under the MIT License.

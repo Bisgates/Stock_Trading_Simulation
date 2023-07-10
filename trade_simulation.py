@@ -29,7 +29,7 @@ class CandlestickChart:
         splt = self.fig.subplots(nrows=2, ncols=1, sharex=True)
 
         # Plot original data
-        mpf.plot(data_to_display, type='candle', style=self.style, axtitle="Original Data", axisoff=True, ax=splt[0], mav=(10, 60))
+        mpf.plot(data_to_display, type='candle', style=self.style, axtitle="Original Data", axisoff=True, ax=splt[0], mav=(10, 30))
 
         # Plot new data
         mpf.plot(data_to_display, type='candle', style=self.style, columns=['New_Open', 'New_High', 'New_Low', 'New_Close', 'Volume'], axtitle="Modified Data", axisoff=True, ax=splt[1])
