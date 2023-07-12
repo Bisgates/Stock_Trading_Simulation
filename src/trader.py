@@ -8,7 +8,8 @@ import json
 from datetime import datetime
 
 class TradeManager:
-    def __init__(self, init_value=1.0, trader_id=0, log_path=''):
+    def __init__(self, stocks_data, init_value=1.0, trader_id=0, log_path=''):
+        self.stocks_data = stocks_data
         self.transactions = defaultdict(list)
         self.hold_stock = None
         self.buy_date = None
@@ -59,7 +60,12 @@ class TradeManager:
         trade_infos = {}
         total_return = self.current_value / self.init_value - 1
         trade_infos['total_return'] = total_return
-        trade_infos['buy_hold_return_rate'] = self.calculate_return_rate(self.transactions['buy'][0][1], self.transactions['sell'][-1][1])
+
+        buy_hold_return_rates = []
+        for stock_name, data in self.stocks_data.items():
+            buy_hold_return_rate = (data.iloc[-1]['Close'] - data.iloc[0]['Close']) / data.iloc[0]['Close']
+            buy_hold_return_rates.append(buy_hold_return_rate)
+        trade_infos['buy_hold_return_rate'] = sum(buy_hold_return_rates)/len(buy_hold_return_rates)
 
         json.dump(trade_infos, open(self.log_path + 'trade_infos.json', 'w'))
     
@@ -110,3 +116,5 @@ class TradeManager:
         conclude_table.add_row('Init Value', "{:.2f}".format(self.init_value))
         conclude_table.add_row('Current Value', "{:.2f}".format(self.current_value))
         console.print(conclude_table)
+
+        return trade_infos['total_return']*100

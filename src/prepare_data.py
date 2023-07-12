@@ -1,8 +1,32 @@
+import os
+import pickle
 import pandas as pd
+from random import sample
+from pathlib import Path
 
 class PrepareData:
-    def __init__(self, file_path):
-        self.data = self.read_and_preprocess_data(file_path)
+    def __init__(self, file_path, max_stocks_num=100):
+        self.stocks_data = {}
+        if file_path.endswith('.csv'):
+            df = pd.read_csv(file_path)
+            data = self.read_and_preprocess_data(df)
+            stock_name = os.path.splitext(file_path)[0].split('/')[-1]
+            self.stocks_data[stock_name] = data
+        elif file_path.endswith('.pkl'):
+            with open(file_path, 'rb') as f:
+                df = pickle.load(f)
+            # self.stocks = sample(list(df.keys()), max_stocks_num)   # all
+            self.stocks = Path('stock_list/hushen300.txt').read_text().split()
+            self.stocks = sample(self.stocks, max_stocks_num)
+            self.stocks_data = {stock:df[stock] for stock in self.stocks}
+        else:   # a bunch of csv files
+            for file_name in os.listdir(file_path):
+                if file_name.endswith('.csv'):
+                    csv_path = os.path.join(file_path, file_name)
+                    df = pd.read_csv(csv_path)
+                    data = self.read_and_preprocess_data(df)
+                    stock_name = os.path.splitext(file_name)[0]
+                    self.stocks_data[stock_name] = data
         
     def calculate_score(self, row):
         # improve needed
@@ -34,9 +58,8 @@ class PrepareData:
 
         return new_open, new_high, new_low, new_close
 
-    def read_and_preprocess_data(self, file_path):
-        data = pd.read_csv(file_path)
-
+    def read_and_preprocess_data(self, data):
+        
         # Add '10MA' and '30MA' columns
         data['10MA'] = data['Close'].rolling(window=10).mean()
         data['30MA'] = data['Close'].rolling(window=30).mean()
