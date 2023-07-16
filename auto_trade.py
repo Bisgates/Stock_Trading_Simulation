@@ -2,18 +2,23 @@ import argparse
 import os
 from src.prepare_data import PrepareData
 from src.trader import TradeManager
+from random import shuffle
 
 class AutoTrade:
     def __init__(self, stocks_data, log_path='logs/'):
         self.stocks_data = stocks_data
+        self.stock_list = list(self.stocks_data.keys())
         self.trader = TradeManager(self.stocks_data, init_value=1.0, log_path=log_path)
         # self.traders = [TradeManager(self.stocks_data, init_value=0.1, log_path=log_path) for _ in range(10)]
         self.trading_dates = sorted(set(date for data in self.stocks_data.values() for date in data.index))
+        self.trading_dates = self.trading_dates[-1500:]
 
     def execute(self):
         for date in self.trading_dates:
             if not self.trader.hold_stock:
-                for stock_name, data in self.stocks_data.items():
+                shuffle(self.stock_list)
+                for stock_name in self.stock_list:
+                    data = self.stocks_data[stock_name]
                     if date in data.index and data.loc[date, '10MA'] > data.loc[date, '30MA']:
                         self.trader.buy_stock(date, data.loc[date, 'Close'], stock_name)
                         break
@@ -23,10 +28,11 @@ class AutoTrade:
                 self.trader.sell_stock(date, 
                                               self.stocks_data[self.trader.hold_stock].loc[date, 'Close'], 
                                               self.trader.hold_stock)
-        # if self.trader.hold_stock:    #TODO, sell all stocks at the end
-        #     self.trader.sell_stock(self.trading_dates[-1], 
-        #                                   self.stocks_data[self.trader.hold_stock].loc[self.trading_dates[-1], 'Close'], 
-        #                                   self.trader.hold_stock)
+        if self.trader.hold_stock:    # sell all stocks at the end
+            last_date = self.stocks_data[self.trader.hold_stock].index[-1]
+            self.trader.sell_stock(last_date, 
+                                          self.stocks_data[self.trader.hold_stock].loc[last_date, 'Close'], 
+                                          self.trader.hold_stock)
 
         self.trader.store_transactions()
         total_return = self.trader.display_transactions()
@@ -38,7 +44,9 @@ class AutoTrade:
     #     last_30MA = 0
     #     for date in self.trading_dates:
     #         if not self.trader.hold_stock:
-    #             for stock_name, data in self.stocks_data.items():
+    #             shuffle(self.stock_list)
+    #             for stock_name in self.stock_list:
+    #                 data = self.stocks_data[stock_name]
     #                 if date in data.index and data.loc[date, '10MA'] > data.loc[date, '30MA'] and \
     #                    data.loc[date, '10MA'] > last_10MA and data.loc[date, '30MA'] > last_30MA and \
     #                    data.loc[date, '10MA'] > data.loc[date, 'Close']:

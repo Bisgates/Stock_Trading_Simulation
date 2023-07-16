@@ -9,16 +9,11 @@ class CandlestickChart:
     def __init__(self, file_path, present_lenth=90, log_path='logs/'):
         
         self.stock_name = file_path.split('/')[-1].split('.')[0]
-        self.data = PrepareData(file_path).data
+        self.data = PrepareData(file_path).stocks_data[self.stock_name]
         self.start_date = self.data.index[0]
-        self.style = self.create_mpf_style()
+        self.style = 'yahoo'
         self.present_lenth = present_lenth
-        self.trader = TradeManager({self.stock_name: self.data}, init_value=1.0, log_path=log_path)
-
-    def create_mpf_style(self):
-        # mc = mpf.make_marketcolors(up='g', down='r', wick={'up': 'g', 'down': 'r'})
-        # return mpf.make_mpf_style(marketcolors=mc)
-        return 'yahoo'
+        self.trade_manager = TradeManager({self.stock_name: self.data}, init_value=1.0, log_path=log_path)
 
     def update_chart(self):
         end_date_index = self.data.index.get_loc(self.start_date) + self.present_lenth
@@ -56,16 +51,16 @@ class CandlestickChart:
             if start_date_index >= 0:
                 self.start_date = self.data.index[start_date_index]
         elif event.key == 'b':
-            if not self.trader.hold_stock:
+            if not self.trade_manager.hold_stock:
                 close_price = self.data.loc[self.current_date, 'Close']
-                self.trader.buy_stock(self.current_date, close_price, self.stock_name)
+                self.trade_manager.buy_stock(self.current_date, close_price, self.stock_name)
         elif event.key == 'c':
-            if self.trader.hold_stock:
+            if self.trade_manager.hold_stock:
                 close_price = self.data.loc[self.current_date, 'Close']
-                self.trader.sell_stock(self.current_date, close_price, self.stock_name)
+                self.trade_manager.sell_stock(self.current_date, close_price, self.stock_name)
         elif event.key == 'q':
-            self.trader.store_transactions()
-            self.trader.display_transactions()
+            self.trade_manager.store_transactions()
+            self.trade_manager.display_transactions()
             plt.close()
 
         self.update_chart()
@@ -89,7 +84,7 @@ def main(file_path=None, present_lenth=90):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Stock Trading Visualization and Simulation")
-    parser.add_argument('--file_path', type=str, default='stock_data/apple.csv', help='Path to the CSV file containing stock data')
+    parser.add_argument('--files_path', type=str, default='stock_data/apple.csv', help='Path to the CSV file containing stock data')
     args = parser.parse_args()
 
-    main(args.file_path)
+    main(args.files_path)
